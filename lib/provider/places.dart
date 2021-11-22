@@ -19,6 +19,12 @@ class PlacesProvider with ChangeNotifier {
     }
   }
 
+  void addFavourite(int id) {
+    int index = placesList.indexWhere((element) => element.id == id);
+    placesList[index].isFavourite = !placesList[index].isFavourite;
+    notifyListeners();
+  }
+
   Place findPlaceById(int id) {
     return placesList.firstWhere((element) => element.id == id);
   }

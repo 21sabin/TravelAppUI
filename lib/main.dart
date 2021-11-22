@@ -15,6 +15,10 @@ class TravelApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (ctx) => PlacesProvider(),
       child: MaterialApp(
+        theme: ThemeData.light().copyWith(
+          primaryColor: Colors.red,
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
         home: Home(),
       ),
     );

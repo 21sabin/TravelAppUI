@@ -15,6 +15,8 @@ class PlaceDetail extends StatefulWidget {
 class _PlaceDetailState extends State<PlaceDetail> {
   @override
   Widget build(BuildContext context) {
+    print('PlaceDetail${widget.id.toString()}');
+    print('2222');
     Place place = Provider.of<PlacesProvider>(context).findPlaceById(widget.id);
     Size size = MediaQuery.of(context).size;
     return Scaffold(
@@ -32,7 +34,9 @@ class _PlaceDetailState extends State<PlaceDetail> {
               color: Colors.white,
             ),
           ),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         actions: [
           Padding(
@@ -52,7 +56,9 @@ class _PlaceDetailState extends State<PlaceDetail> {
           children: [
             Container(
                 height: size.height * 0.5,
-                child: Image.network(place.imageUrl, fit: BoxFit.cover)),
+                child: Hero(
+                    tag: 'PlaceDetail' + widget.id.toString(),
+                    child: Image.network(place.imageUrl, fit: BoxFit.cover))),
             Container(
               margin: EdgeInsets.only(top: size.height * 0.44),
               decoration: BoxDecoration(
@@ -152,7 +158,67 @@ class _PlaceDetailState extends State<PlaceDetail> {
                     )),
                   ),
                   Expanded(
-                    child: Container(color: Colors.green),
+                    child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              blurRadius: 4.0,
+                              spreadRadius: 6.0,
+                              offset: Offset(
+                                  2.0, 2.0), // shadow direction: bottom right
+                            )
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Consumer<PlacesProvider>(
+                                builder: (ctx, placeState, _) => Container(
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: Color(0xFF98e8fa), width: 2),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      placeState.addFavourite(widget.id);
+
+                                      if (place.isFavourite)
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                                content: Text(
+                                                    "Places added to favourite")));
+                                    },
+                                    child: Icon(
+                                        place.isFavourite
+                                            ? Icons.favorite
+                                            : Icons.favorite_border_outlined,
+                                        color: Color(0xFF98e8fa)),
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                    Color(0xFFFF7800),
+                                  ),
+                                  padding: MaterialStateProperty.all(
+                                    EdgeInsets.symmetric(
+                                        horizontal: 25, vertical: 13),
+                                  ),
+                                ),
+                                onPressed: () {},
+                                child: const Text('BOOK NOW'),
+                              ),
+                            ],
+                          ),
+                        ) // child widget, replace with your own
+                        ),
                   )
                 ],
               ),
@@ -163,6 +229,13 @@ class _PlaceDetailState extends State<PlaceDetail> {
     );
   }
 }
+//  boxShadow: [
+//                   BoxShadow(
+//                     color: Colors.grey,
+//                     offset: Offset(0.0, 1.0), //(x,y)
+//                     blurRadius: 6.0,
+//                   ),
+//                 ],
 
 Color getRandomColor() {
   Random random = new Random();

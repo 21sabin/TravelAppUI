@@ -3,6 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:travel_app/provider/places.dart';
 import 'package:provider/provider.dart';
 import './place_detail.dart';
+import './circulatIndicator.dart';
 
 const kHeaderTextStyle = TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
 
@@ -13,7 +14,7 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
@@ -38,9 +39,17 @@ class _HomeState extends State<Home> {
     });
   }
 
+  int selectedIndex = 0;
+  void onItemTap(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
   List<Widget> widgets = [Places(), Emotions(), Inspiration()];
   @override
   Widget build(BuildContext context) {
+    TabController tabController = TabController(length: 3, vsync: this);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -62,8 +71,9 @@ class _HomeState extends State<Home> {
           )
         ],
       ),
+      bottomNavigationBar: bottomNavBar(selectedIndex, onItemTap),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -74,40 +84,44 @@ class _HomeState extends State<Home> {
                 const Text('a matter of money', style: kHeaderTextStyle)
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                      flex: 3,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: listOptions
-                              .map((e) => GestureDetector(
-                                    onTap: () {
-                                      var i = listOptions.indexOf(e);
-                                      updateIndex(i);
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        children: [
-                                          Text(e),
-                                          SizedBox(
-                                            height: 2,
-                                          ),
-                                          if (listOptions.indexOf(e) == index)
-                                            dotIndicator()
-                                        ],
-                                      ),
-                                    ),
-                                  ))
-                              .toList())),
-                  Expanded(flex: 1, child: const Icon(Icons.list))
-                ],
+            //tabbar
+            Container(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Expanded(
+                  child: TabBar(
+                    labelPadding: const EdgeInsets.only(left: 5, right: 30),
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    isScrollable: true,
+                    indicator:
+                        CircleTabIndicator(color: Color(0xFFFF7800), radius: 4),
+                    controller: tabController,
+                    tabs: [
+                      Tab(text: 'Places'),
+                      Tab(text: 'Inspiration'),
+                      Tab(text: 'Emotions'),
+                    ],
+                  ),
+                ),
               ),
             ),
-            Container(child: Expanded(child: widgets[index]))
+
+            Container(
+              margin: EdgeInsets.only(top: 10),
+              height: 450,
+              width: double.maxFinite,
+              child: TabBarView(
+                controller: tabController,
+                children: [
+                  Places(),
+                  Text('hi'),
+                  Text('hi'),
+                ],
+              ),
+            )
+            //end tabbar
           ],
         ),
       ),
@@ -132,7 +146,6 @@ class Places extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final places = Provider.of<PlacesProvider>(context).placesList;
-    print(places);
     return places.length > 0
         ? StaggeredGridView.countBuilder(
             crossAxisCount: 4,
@@ -146,18 +159,31 @@ class Places extends StatelessWidget {
                           )));
                 },
                 child: Container(
-                  height: 100,
-                  width: 100,
+                  // height: 100,
+                  // width: 80,
+
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(places[index].imageUrl, fit: BoxFit.cover),
+                      Hero(
+                        tag: 'PlaceDetail' + places[index].id.toString(),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          child: Image.network(places[index].imageUrl,
+                              fit: BoxFit.cover),
+                        ),
+                      ),
                       Align(
                         alignment: Alignment.bottomCenter,
-                        child: Text(
-                          places[index].name,
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 10),
+                          child: Text(
+                            places[index].name,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                       )
                     ],
@@ -166,7 +192,7 @@ class Places extends StatelessWidget {
               );
             },
             staggeredTileBuilder: (int index) {
-              return StaggeredTile.count(2, index.isEven ? 2 : 1);
+              return StaggeredTile.count(2, index.isEven ? 2.2 : 1.4);
             },
             mainAxisSpacing: 9.0,
             crossAxisSpacing: 4.0,
@@ -175,6 +201,36 @@ class Places extends StatelessWidget {
             child: CircularProgressIndicator(),
           );
   }
+}
+
+Widget bottomNavBar(int index, Function(int index) onTapItem) {
+  return BottomNavigationBar(
+    type: BottomNavigationBarType.fixed,
+    showSelectedLabels: false,
+    showUnselectedLabels: false,
+    currentIndex: index,
+    selectedItemColor: Color(0xFFFF7800),
+    unselectedItemColor: Colors.grey.withOpacity(0.5),
+    onTap: onTapItem,
+    items: [
+      BottomNavigationBarItem(
+        icon: new Icon(Icons.apps_outlined),
+        label: '',
+      ),
+      BottomNavigationBarItem(
+        icon: new Icon(Icons.signal_cellular_alt_outlined),
+        label: '',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.search_outlined),
+        label: '',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.person_outlined),
+        label: '',
+      )
+    ],
+  );
 }
 
 class Emotions extends StatelessWidget {
