@@ -72,57 +72,63 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         ],
       ),
       bottomNavigationBar: bottomNavBar(selectedIndex, onItemTap),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Travel is never', style: kHeaderTextStyle),
-                const Text('a matter of money', style: kHeaderTextStyle)
-              ],
-            ),
-            //tabbar
-            Container(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Expanded(
-                  child: TabBar(
-                    labelPadding: const EdgeInsets.only(left: 5, right: 30),
-                    labelColor: Colors.black,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    isScrollable: true,
-                    indicator:
-                        CircleTabIndicator(color: Color(0xFFFF7800), radius: 4),
-                    controller: tabController,
-                    tabs: [
-                      Tab(text: 'Places'),
-                      Tab(text: 'Inspiration'),
-                      Tab(text: 'Emotions'),
-                    ],
+      body: DefaultTabController(
+        length: 3,
+        initialIndex: 0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Travel is never', style: kHeaderTextStyle),
+                  const Text('a matter of money', style: kHeaderTextStyle)
+                ],
+              ),
+              //tabbar
+              Container(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Expanded(
+                    child: TabBar(
+                      labelPadding: const EdgeInsets.only(left: 5, right: 30),
+                      labelColor: Colors.black,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      isScrollable: true,
+                      indicator: CircleTabIndicator(
+                          color: Color(0xFFFF7800), radius: 4),
+                      // controller: tabController,
+                      tabs: [
+                        Tab(text: 'Places'),
+                        Tab(text: 'Inspiration'),
+                        Tab(text: 'Emotions'),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            Container(
-              margin: EdgeInsets.only(top: 10),
-              height: 450,
-              width: double.maxFinite,
-              child: TabBarView(
-                controller: tabController,
-                children: [
-                  Places(),
-                  Text('hi'),
-                  Text('hi'),
-                ],
-              ),
-            )
-            //end tabbar
-          ],
+              Container(
+                margin: EdgeInsets.only(top: 10),
+                // height: 450,
+                // width: double.maxFinite,
+                child: TabBarView(
+                  // controller: tabController,
+                  children: [
+                    SingleChildScrollView(
+                      child: Places(),
+                    ),
+                    Text('hi'),
+                    Text('hi'),
+                  ],
+                ),
+              )
+              //end tabbar
+            ],
+          ),
         ),
       ),
     );
@@ -148,6 +154,7 @@ class Places extends StatelessWidget {
     final places = Provider.of<PlacesProvider>(context).placesList;
     return places.length > 0
         ? StaggeredGridView.countBuilder(
+            physics: NeverScrollableScrollPhysics(),
             crossAxisCount: 4,
             itemCount: places.length,
             itemBuilder: (BuildContext context, int index) {

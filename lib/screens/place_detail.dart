@@ -242,8 +242,8 @@ Color getRandomColor() {
   List<Color> colors = [
     Color(0xfcba03),
     Color(0xFF2f8fde),
-    Color(0xFF8f2f17),
-    Color(0xFFffd503),
+    // Color(0xFF8f2f17),
+    // Color(0xFFffd503),
   ];
   int randomNumber = random.nextInt(colors.length);
   print(colors[randomNumber]);
