@@ -15,8 +15,6 @@ class PlaceDetail extends StatefulWidget {
 class _PlaceDetailState extends State<PlaceDetail> {
   @override
   Widget build(BuildContext context) {
-    print('PlaceDetail${widget.id.toString()}');
-    print('2222');
     Place place = Provider.of<PlacesProvider>(context).findPlaceById(widget.id);
     Size size = MediaQuery.of(context).size;
     return Scaffold(
@@ -114,8 +112,10 @@ class _PlaceDetailState extends State<PlaceDetail> {
                           children: [
                             Icon(
                               Icons.location_on_outlined,
+                              color: Color(0xFFFF7800),
                             ),
-                            Text(place.location)
+                            Text(place.location,
+                                style: TextStyle(fontWeight: FontWeight.bold))
                           ],
                         )
                       ],
@@ -139,7 +139,7 @@ class _PlaceDetailState extends State<PlaceDetail> {
                           Wrap(
                             children: [
                               for (var i = 0; i < place.features.length; i++)
-                                featureItem(place.features[i])
+                                featureItem(place.features[i], i)
                             ],
                           ),
                         ],
@@ -152,6 +152,7 @@ class _PlaceDetailState extends State<PlaceDetail> {
                   Expanded(
                     flex: 2,
                     child: setPadding(Container(
+                      alignment: Alignment.topLeft,
                       child: Wrap(
                         children: [Text(place.description)],
                       ),
@@ -247,24 +248,27 @@ Color getRandomColor() {
   ];
   int randomNumber = random.nextInt(colors.length);
   print(colors[randomNumber]);
-  return colors[randomNumber];
+  return Color(0xFFfcba03);
+  // return colors[randomNumber];
 }
 
-Widget featureItem(String title) {
+Widget featureItem(String title, int i) {
+  Color color = i % 2 == 0 ? Color(0xFF2f8fde) : Color(0xFFfcba03);
   double width = 50;
   return Container(
       margin: EdgeInsets.all(5),
       alignment: Alignment.bottomLeft,
       width: width,
-      height: 50,
+      height: 54,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             alignment: Alignment.center,
+            padding: EdgeInsets.symmetric(vertical: 4),
             width: width,
             decoration: BoxDecoration(
-              color: getRandomColor(),
+              color: color,
               borderRadius: BorderRadius.circular(6),
             ),
             child: iconUtility(title),
@@ -295,7 +299,7 @@ Widget iconUtility(String feature) {
     case 'bar':
       return Icon(Icons.view_week_outlined);
       break;
-    case 'gmy':
+    case 'gym':
       return Icon(Icons.fitness_center_outlined);
       break;
     case 'heater':

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:travel_app/provider/places.dart';
 import 'package:provider/provider.dart';
+import 'package:travel_app/screens/favourite_place_screen.dart';
+import 'package:travel_app/screens/place_search_deligate_screen.dart';
 import './place_detail.dart';
 import './circulatIndicator.dart';
 
@@ -15,6 +17,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
+  List<Widget> widgets = [Places(), Emotions(), Inspiration()];
+
+  bool flag = true;
+  int index = 0;
+  bool init = false;
+  List<String> listOptions = ['Places', 'Inspiration', 'Emotions'];
   @override
   void initState() {
     super.initState();
@@ -22,20 +30,28 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   Future<void> getPlacesData() async {
     await Provider.of<PlacesProvider>(context, listen: false).getPlaces();
+    setState(() {
+      init = true;
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    getPlacesData();
+    if (!init) {
+      getPlacesData();
+    }
   }
-
-  int index = 0;
-  List<String> listOptions = ['Places', 'Inspiration', 'Emotions'];
 
   void updateIndex(int i) {
     setState(() {
       index = i;
+    });
+  }
+
+  void onClose() {
+    setState(() {
+      selectedIndex = 0;
     });
   }
 
@@ -44,9 +60,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     setState(() {
       selectedIndex = index;
     });
+    if (selectedIndex == 1) {
+      Navigator.push(context,
+              MaterialPageRoute(builder: (context) => FavouritePlaceList()))
+          .then((value) => setState(() {
+                selectedIndex = 0;
+              }));
+    } else if (selectedIndex == 2) {
+      showSearch(context: context, delegate: PlaceSearchDelegate(onClose));
+    }
   }
 
-  List<Widget> widgets = [Places(), Emotions(), Inspiration()];
   @override
   Widget build(BuildContext context) {
     TabController tabController = TabController(length: 3, vsync: this);
@@ -54,19 +78,43 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: const Text(
-          'Hey! Zillur Mia',
-          style: TextStyle(
-              color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold),
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Travel is never',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'a matter of money',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.bold),
+            )
+          ],
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: const CircleAvatar(
-              radius: 16.0,
-              backgroundImage: NetworkImage(
-                  "https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg"),
-              backgroundColor: Colors.transparent,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            child: Column(
+              children: [
+                const CircleAvatar(
+                  radius: 16.0,
+                  backgroundImage: NetworkImage(
+                      "https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg"),
+                  backgroundColor: Colors.transparent,
+                ),
+                Text(
+                  'Zillur Mia',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                )
+              ],
             ),
           )
         ],
@@ -80,13 +128,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Travel is never', style: kHeaderTextStyle),
-                  const Text('a matter of money', style: kHeaderTextStyle)
-                ],
-              ),
+              // Column(
+              //   crossAxisAlignment: CrossAxisAlignment.start,
+              //   children: [
+              //     const Text('Travel is never', style: kHeaderTextStyle),
+              //     const Text('a matter of money', style: kHeaderTextStyle)
+              //   ],
+              // ),
+              // if (flag) ...[Text('test'), Text('second')],
               //tabbar
               Container(
                 child: Align(
@@ -111,19 +160,21 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 ),
               ),
 
-              Container(
-                margin: EdgeInsets.only(top: 10),
-                // height: 450,
-                // width: double.maxFinite,
-                child: TabBarView(
-                  // controller: tabController,
-                  children: [
-                    SingleChildScrollView(
-                      child: Places(),
-                    ),
-                    Text('hi'),
-                    Text('hi'),
-                  ],
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(top: 10),
+                  // height: 450,
+                  // width: double.maxFinite,
+                  child: TabBarView(
+                    // controller: tabController,
+                    children: [
+                      SingleChildScrollView(
+                        child: Places(),
+                      ),
+                      Text('hi'),
+                      Text('hi'),
+                    ],
+                  ),
                 ),
               )
               //end tabbar
@@ -155,6 +206,7 @@ class Places extends StatelessWidget {
     return places.length > 0
         ? StaggeredGridView.countBuilder(
             physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
             crossAxisCount: 4,
             itemCount: places.length,
             itemBuilder: (BuildContext context, int index) {
@@ -225,7 +277,9 @@ Widget bottomNavBar(int index, Function(int index) onTapItem) {
         label: '',
       ),
       BottomNavigationBarItem(
-        icon: new Icon(Icons.signal_cellular_alt_outlined),
+        icon: Icon(
+          Icons.favorite_border_outlined,
+        ),
         label: '',
       ),
       BottomNavigationBarItem(
